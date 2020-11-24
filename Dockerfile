@@ -32,6 +32,7 @@ RUN python -m pip install -U pip
 RUN python -m pip install -U matplotlib
 RUN python -m pip install -U gym
 RUN python -m pip install -U gym[atari]
+RUN python -m pip install -U gym[box2d]
 
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
