@@ -1,0 +1,3 @@
+[submodule "MadMario"]
+	path = MadMario
+	url = https://github.com/YuansongFeng/MadMario.git

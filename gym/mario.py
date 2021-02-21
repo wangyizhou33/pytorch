@@ -1,7 +1,7 @@
 import gym
+import gym_super_mario_bros
 
-env = gym.make('SpaceInvaders-v0')
-# env = gym.make("Enduro-v0")
+env = gym_super_mario_bros.make("SuperMarioBros-1-1-v0")
 env.reset()
 
 for _ in range(2000):

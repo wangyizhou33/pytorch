@@ -26,13 +26,19 @@ ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRAR
 RUN apt -y update && apt -y install \
 python3-tk \
 python-opengl \
-cmake
+cmake \
+g++ \
+libglib2.0-0
+# g++ needed for gym-super-mario-bros
 
 RUN python -m pip install -U pip
 RUN python -m pip install -U matplotlib
+RUN python -m pip install -U scikit-image
+RUN python -m pip install -U opencv-python
 RUN python -m pip install -U gym
 RUN python -m pip install -U gym[atari]
 RUN python -m pip install -U gym[box2d]
+RUN python -m pip install -U gym-super-mario-bros==7.3.0
 
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
