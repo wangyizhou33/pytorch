@@ -1,7 +1,12 @@
+from pickletools import optimize
 from re import S
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+
+def get_num_correct(preds, labels):
+    return preds.argmax(dim=1).eq(labels).sum().item()
 
 
 class Network(nn.Module):
@@ -67,7 +72,7 @@ train_set = torchvision.datasets.FashionMNIST(
     transform=transforms.Compose([transforms.ToTensor()]),
 )
 
-torch.set_grad_enabled(False)
+torch.set_grad_enabled(True)
 
 # predict a single sample
 sample = next(iter(train_set))
@@ -103,3 +108,84 @@ print(
     labels,
 )
 print(">> Prediction accuracy", preds.argmax(dim=1).eq(labels))
+
+# loss function
+loss = F.cross_entropy(preds, labels)
+print(">> The initial loss is ", loss.item())
+
+#  backward propagation
+print(">> Initially there is no gradient. For example the conv1 layer has")
+print(network.conv1.weight.grad)
+loss.backward()
+print(">> After the back propagation, the same layer has")
+print(network.conv1.weight.grad.shape)
+
+import torch.optim as optim
+
+# updating the weights
+optimizer = optim.Adam(network.parameters(), lr=0.01)
+print(">> Before the step, the loss is ", loss.item())
+print("The network gets ", get_num_correct(preds, labels), " image correct")
+optimizer.step()
+preds = network(images)
+loss = F.cross_entropy(preds, labels)
+print(">> After the step, the loss is ", loss.item())
+print("The network gets ", get_num_correct(preds, labels), " image correct")
+
+# training loop
+print(">> Now we train the network continuously.")
+train_loader = torch.utils.data.DataLoader(train_set, batch_size=100)
+optimizer = optim.Adam(network.parameters(), lr=0.01)
+
+for epoch in range(5):
+    total_loss = 0
+    total_correct = 0
+
+    for batch in train_loader:
+        images, labels = batch
+
+        preds = network(images)
+        loss = F.cross_entropy(preds, labels)
+
+        optimizer.zero_grad()
+        loss.backward()  # calculate gradients
+        optimizer.step()  # update the weights
+
+        total_loss += loss.item()
+        total_correct += get_num_correct(preds, labels)
+
+    print("epoch: ", epoch, " total_correct: ", total_correct, " loss ", total_loss)
+
+print(">> Accuracy after ", 5, " epochs: ", total_correct / len(train_set))
+
+# visualizing the result via confusion matrix
+
+# get the predictions in a single tensor
+def get_all_preds(model, loader):
+    all_preds = torch.tensor([])
+    for batch in loader:
+        images, labels = batch
+
+        preds = model(images)
+        all_preds = torch.cat((all_preds, preds), dim=0)
+
+    return all_preds
+
+
+print(">> Predict the all set one more time and stack the results together.")
+prediction_loader = torch.utils.data.DataLoader(train_set, batch_size=10000)
+train_preds = get_all_preds(network, prediction_loader)
+
+stacked = torch.stack((train_set.targets, train_preds.argmax(dim=1)), dim=1)
+print(">> The stack has shape ", stacked.shape)
+
+# compute the confusion matrix
+# similar to a histogram
+cmt = torch.zeros(10, 10, dtype=torch.int64)
+
+for p in stacked:
+    j, k = p.tolist()
+    cmt[j, k] = cmt[j, k] + 1
+
+print(">> This is the confusion matrix")
+print(cmt)
