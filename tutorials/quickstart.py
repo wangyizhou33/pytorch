@@ -21,8 +21,8 @@ PyTorch has two `primitives to work with data <https://pytorch.org/docs/stable/d
 the ``Dataset``.
 
 """
-import wandb
-wandb.login() # WANDB_API_KEY=.... python3 quickstart.py
+# import wandb
+# wandb.login() # WANDB_API_KEY=.... python3 quickstart.py
 
 import torch
 from torch import nn
@@ -30,19 +30,21 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor, Lambda, Compose
 import matplotlib.pyplot as plt
+from clearml import Task
 
-# start a new wandb run to track this script
-wandb.init(
-    # set the wandb project where this run will be logged
-    project="my-tutorial-project",
+# # start a new wandb run to track this script
+# wandb.init(
+#     # set the wandb project where this run will be logged
+#     project="my-tutorial-project",
 
-    config={
-      "learning_rate": 0.02,
-      "architecture": "CNN",
-      "dataset": "CIFAR-100",
-      "epochs": 10
-    }
-)
+#     config={
+#       "learning_rate": 0.02,
+#       "architecture": "CNN",
+#       "dataset": "CIFAR-100",
+#       "epochs": 10
+#     }
+# )
+task = Task.init(project_name='great project', task_name='best experiment')
 
 ######################################################################
 # PyTorch offers domain-specific libraries such as `TorchText <https://pytorch.org/text/stable/index.html>`_,
@@ -176,7 +178,7 @@ def train(dataloader, model, loss_fn, optimizer):
         if batch % 100 == 0:
             loss, current = loss.item(), batch * len(X)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
-            wandb.log({"loss": loss})
+            # wandb.log({"loss": loss})
 
 
 ##############################################################################
@@ -195,7 +197,7 @@ def test(dataloader, model, loss_fn):
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
             if batch % 100 == 0:
                 print("log_image_table ...")
-                log_image_table(X, pred.argmax(1), y, pred.softmax(dim=1))
+                # log_image_table(X, pred.argmax(1), y, pred.softmax(dim=1))
 
     test_loss /= size
     correct /= size
@@ -203,20 +205,20 @@ def test(dataloader, model, loss_fn):
         f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n"
     )
 
-def log_image_table(images, predicted, labels, probs):
-    "Log a wandb.Table with (img, pred, target, scores)"
-    # 🐝 Create a wandb Table to log images, labels and predictions to
-    table = wandb.Table(columns=["image", "pred", "target"]+[f"score_{i}" for i in range(10)])
-    for img, pred, targ, prob in zip(images.to("cpu"), predicted.to("cpu"), labels.to("cpu"), probs.to("cpu")):
-        table.add_data(wandb.Image(img[0].numpy()*255), pred, targ, *prob.numpy())
-    wandb.log({"predictions_table":table}, commit=False)
+# def log_image_table(images, predicted, labels, probs):
+#     "Log a wandb.Table with (img, pred, target, scores)"
+#     # 🐝 Create a wandb Table to log images, labels and predictions to
+#     table = wandb.Table(columns=["image", "pred", "target"]+[f"score_{i}" for i in range(10)])
+#     for img, pred, targ, prob in zip(images.to("cpu"), predicted.to("cpu"), labels.to("cpu"), probs.to("cpu")):
+#         table.add_data(wandb.Image(img[0].numpy()*255), pred, targ, *prob.numpy())
+#     wandb.log({"predictions_table":table}, commit=False)
 
 ##############################################################################
 # The training process is conducted over several iterations (*epochs*). During each epoch, the model learns
 # parameters to make better predictions. We print the model's accuracy and loss at each epoch; we'd like to see the
 # accuracy increase and the loss decrease with every epoch.
 
-epochs = 5
+epochs = 3
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
     train(train_dataloader, model, loss_fn, optimizer)
@@ -224,7 +226,7 @@ for t in range(epochs):
 
 print("Done!")
 
-wandb.finish()
+# wandb.finish()
 
 ######################################################################
 # Read more about `Training your model <optimization_tutorial.html>`_.
