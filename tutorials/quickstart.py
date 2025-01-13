@@ -30,7 +30,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor, Lambda, Compose
 import matplotlib.pyplot as plt
-from clearml import Task
+# from clearml import Task
 
 # # start a new wandb run to track this script
 # wandb.init(
@@ -44,7 +44,7 @@ from clearml import Task
 #       "epochs": 10
 #     }
 # )
-task = Task.init(project_name='great project', task_name='best experiment')
+# task = Task.init(project_name='great project', task_name='best experiment')
 
 ######################################################################
 # PyTorch offers domain-specific libraries such as `TorchText <https://pytorch.org/text/stable/index.html>`_,
